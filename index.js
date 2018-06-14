@@ -1,6 +1,7 @@
 /*
 To run this do `sudo npm start` or 
 `node index.js`
+url http://localhost:8080/?var=this-is-value-of-query-variable
 */
 //dependancies
 var http = require('http');
