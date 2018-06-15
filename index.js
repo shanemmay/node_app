@@ -12,10 +12,11 @@ var fs = require('fs');
 var formidable = require('formidable');
 var events = require('events');
 var test = require('./custom_modules/test_module');
+var nodemailer = require('nodemailer');
 
 let content;
 let file_name;
-let eventEmitter = new events.EventEmitter();
+
 
 http.createServer(function (req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
@@ -132,10 +133,32 @@ http.createServer(function (req, res) {
     	save_file("./uploaded_files/" + new Date());
 
     	read_dir(read_file);
-
-    	
     }//end of else
 
+    //sending emails
+    var transporter = nodemailer.createTransport(
+    	{
+    		service	:"gmail",
+    		auth	:
+    		{
+    			user:"shanemaygunlogson@gmail.com",
+    			pass:"Shane1993!"
+    		}
+    	});
+    var mailOptions = 
+    {
+    	from 	: "shanemaygunlogson@gmail.com",
+    	to 		: "krbsweet16@gmail.com",
+    	subject	: "i love you",
+    	html	: "<h1 style='color:pink; text-align:center;'>I Love You!</h1>"
+    };
+    transporter.sendMail(
+    	mailOptions, 
+    	(err, info) =>
+    	{
+    		if (err){ console.log(err);}
+    		else{ console.log("Email sent!");}
+    	})
 
     test.test_func();
 
