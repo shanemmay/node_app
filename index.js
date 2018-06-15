@@ -3,18 +3,78 @@ To run this do `sudo npm start` or
 `node index.js`
 url http://localhost:8080/?var=this-is-value-of-query-variable
 */
-//dependancies
+/*
+DEPENDENCIES
+*/
 var http = require('http');
 var url = require('url');
 var fs = require('fs');
 var formidable = require('formidable');
+var events = require('events');
 var test = require('./custom_modules/test_module');
 
 let content;
-let file_name
+let file_name;
+let eventEmitter = new events.EventEmitter();
 
 http.createServer(function (req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
+
+    /*
+	FUNCTIONS
+	*/
+
+	function save_file(name_of_file)
+	{
+		//saving the file if the form was submitted
+		var form = new formidable.IncomingForm();
+		form.parse(req, (err,fields,files) =>
+		{
+			var oldpath = files.filetoupload.path;
+			//files.filetoupload.name
+			var newpath = name_of_file;
+			fs.rename(oldpath, newpath, (err) =>
+			{
+				if (err) console.log(err);
+				res.write("<h1>File uploaded!</h1>");
+				return;
+			});//end of fs rename
+			
+		});//end of form parse
+	}
+
+	function read_file( file_name, callback = () => {} )
+	{
+		//reading the file the was uploaded
+    	fs.readFile(file_name, (err, data) =>
+    	{
+
+    		if (err) console.log(err);
+    		res.write("<p>~~~~~~~~</p>");
+    		res.write(data);
+    		console.log(data);
+    		res.write("<br><p>~~~~~~~~</p>");  
+    		callback() 	
+    		return data;
+    	});
+	}
+
+	function read_dir(callback = (str) => {})
+	{
+		fs.readdir("./uploaded_files/",
+    			(err,files) =>
+		{
+			let files_arr = files;
+			files_arr.sort();
+			callback("./uploaded_files/" + files_arr[ files_arr.length - 1]);
+			return files_arr;
+		});
+
+	}
+
+	/*
+	MAIN CODE
+	*/
 
     res.write("<h1>Web  Site Development Day 1!</h1>");
 
@@ -69,27 +129,20 @@ http.createServer(function (req, res) {
     }
     else
     {
-    	//saving the file if the form was submitted
-    	var form = new formidable.IncomingForm();
-    	form.parse(req, (err,fields,files) =>
-    	{
-    		var oldpath = files.filetoupload.path;
-    		var newpath = "./uploaded_files/" + files.filetoupload.name;
-    		fs.rename(oldpath, newpath, (err) =>
-    		{
-    			if (err) console.log(err);
-    			res.write("<h1>File uploaded!</h1>");
-    			return;
+    	save_file("./uploaded_files/" + new Date());
 
-    			res.end('end');
-    		});//end of fs rename
-    		
-    	});//end of form parse
-    }
+    	read_dir(read_file);
+
+    	
+    }//end of else
 
 
     test.test_func();
 
+
+
     
 }).listen(8080);
+
+
 
